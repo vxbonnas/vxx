@@ -1,6 +1,24 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Criar painel no canto da tela
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ESPPainel"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = PlayerGui
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(0, 200, 0, 25)
+label.Position = UDim2.new(0, 10, 0, 10) -- canto superior esquerdo
+label.BackgroundTransparency = 0.5
+label.BackgroundColor3 = Color3.new(0, 0, 0)
+label.Text = "[ESP Ativado]"
+label.TextColor3 = Color3.new(0, 1, 0)
+label.TextScaled = true
+label.Parent = screenGui
+
+-- Função para criar ESP (nome flutuante)
 function criarESP(jogador)
     local personagem = jogador.Character or jogador.CharacterAdded:Wait()
     if personagem:FindFirstChild("Head") and not personagem.Head:FindFirstChild("ESP") then
@@ -23,12 +41,14 @@ function criarESP(jogador)
     end
 end
 
+-- Aplicar ESP aos jogadores existentes
 for _, jogador in ipairs(Players:GetPlayers()) do
     if jogador ~= LocalPlayer then
         criarESP(jogador)
     end
 end
 
+-- Aplicar ESP a novos jogadores
 Players.PlayerAdded:Connect(function(jogador)
     jogador.CharacterAdded:Connect(function()
         criarESP(jogador)
