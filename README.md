@@ -1,56 +1,36 @@
--- Variáveis principais
-local esp_ativo = true
-local mostrar_nomes = true
-local mostrar_caixa = true
-local verificar_time = true
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Cores
-local cor_inimigo = {r=1, g=0, b=0}
-local cor_aliado = {r=0, g=1, b=0}
+function criarESP(jogador)
+    local personagem = jogador.Character or jogador.CharacterAdded:Wait()
+    if personagem:FindFirstChild("Head") and not personagem.Head:FindFirstChild("ESP") then
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "ESP"
+        billboard.Adornee = personagem.Head
+        billboard.Size = UDim2.new(0, 100, 0, 30)
+        billboard.StudsOffset = Vector3.new(0, 2, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = personagem.Head
 
--- Desenhar texto na tela
-function desenhar_texto(x, y, texto, cor)
-    DrawText(texto, x, y, cor.r, cor.g, cor.b, 1.0)
-end
-
--- Desenhar painel no canto da tela
-function desenhar_painel()
-    local x = 10
-    local y = 30
-    desenhar_texto(x, y,      "ESP: " .. tostring(esp_ativo),      {r=1, g=1, b=1})
-    desenhar_texto(x, y + 15, "Nomes: " .. tostring(mostrar_nomes), {r=1, g=1, b=1})
-    desenhar_texto(x, y + 30, "Caixa: " .. tostring(mostrar_caixa), {r=1, g=1, b=1})
-end
-
--- ESP simples
-function esp_loop()
-    if not esp_ativo then return end
-
-    for _, jogador in pairs(GetAllPlayers()) do
-        if jogador ~= LocalPlayer then
-            if not verificar_time or jogador.Team ~= LocalPlayer.Team then
-                local pos2D = WorldToScreen(jogador.Position)
-                if pos2D then
-                    local cor = (jogador.Team == LocalPlayer.Team) and cor_aliado or cor_inimigo
-
-                    if mostrar_nomes then
-                        desenhar_texto(pos2D.x, pos2D.y - 20, jogador.Name, cor)
-                    end
-
-                    if mostrar_caixa then
-                        DrawRect(pos2D.x, pos2D.y, 50, 100, cor.r, cor.g, cor.b, 1.0) -- Caixa simples
-                    end
-                end
-            end
-        end
+        local texto = Instance.new("TextLabel")
+        texto.Size = UDim2.new(1, 0, 1, 0)
+        texto.BackgroundTransparency = 1
+        texto.Text = jogador.Name
+        texto.TextColor3 = Color3.new(1, 0, 0)
+        texto.TextStrokeTransparency = 0.5
+        texto.TextScaled = true
+        texto.Parent = billboard
     end
 end
 
--- Loop principal de render
-function on_render()
-    desenhar_painel()
-    esp_loop()
+for _, jogador in ipairs(Players:GetPlayers()) do
+    if jogador ~= LocalPlayer then
+        criarESP(jogador)
+    end
 end
 
--- Adiciona o ESP ao render do jogo
-HookRender(on_render)
+Players.PlayerAdded:Connect(function(jogador)
+    jogador.CharacterAdded:Connect(function()
+        criarESP(jogador)
+    end)
+end)
